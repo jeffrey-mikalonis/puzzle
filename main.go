@@ -35,6 +35,30 @@ func main() {
 	fmt.Println("Duration [s]:", *duration)
 
 	done:=make(chan bool, 1)
+
+	go func() {
+		for i:= 0; i<total; i++ {
+			fmt.Printf("Question #%d %s = ", i+1, questions[i][0])
+			answer, _:=reader.ReadString('\n');
+
+			answer = strings.Replace(answer, "\n", "", -1)
+			answer = strings.ToLower(answer)
+			answer = strings.TrimSpace(answer)
+
+			if strings.Compare(questions[i][1], answer) == 0 {
+				correct++
+			}
+		}
+		done <- true
+	}()
+
+	select {
+	case <-done:
+		fmt.Println("Good Job!")
+	case <-time.After(time.Duration(*duration) * time.Second):
+		fmt.Println("\nYou reached maximum time.")
+	}
+	fmt.Println("Your score:", correct, "/", total)
 }
 
 func shuffle(questions [][]string) [][]string {
